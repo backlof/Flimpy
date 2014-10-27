@@ -17,12 +17,14 @@ class Settings:
     # Load attributes from JSON
     def load(self):
         dictionary = json.read(_filename)
-        for key in dictionary:
-            setattr(self, key, dictionary[key])
 
-        self.directories = remove_redundant(self.directories)
-        self.file_extensions = sorted(self.file_extensions)
-        self.exclude = sorted(self.exclude)
+        if dictionary:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+
+            self.directories = remove_redundant(self.directories)
+            self.file_extensions = sorted(self.file_extensions)
+            self.exclude = sorted(self.exclude)
 
     # Convert class attributes to a dictionary
     def to_dictionary(self):
