@@ -1,0 +1,12 @@
+{
+    "file_extensions": [
+        ".mkv"
+    ], 
+    "exclude": [], 
+    "directories": [
+        "F:/Films & Documentaries", 
+        "C:/Users/Alexander/Dropbox/Wallpapers"
+    ], 
+    "minimum_size_byte": 0, 
+    "portable": false
+}
