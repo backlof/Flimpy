@@ -5,11 +5,11 @@ from os.path import split
 from os.path import realpath
 
 
-# May not work
+#todo Test that this works
 def same_drive(path, compare_to=None):
     if not compare_to:
         compare_to = current_dir()
-    return not commonprefix([path, compare_to]) == ''
+    return len(commonprefix([path, compare_to])) > 2
 
 
 def absolute_path(path):

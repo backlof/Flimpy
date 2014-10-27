@@ -2,7 +2,7 @@ import os
 import sys
 
 
-def run_file(path):
+def run(path):
     import subprocess
 
     # Windows
