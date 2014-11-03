@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="icons">
-    <file>icons16/book-bookmark.png</file>
-    <file>icons16/book-brown.png</file>
-    <file>icons16/minus.png</file>
-    <file>icons16/plus.png</file>
-  </qresource>
-</RCC>
