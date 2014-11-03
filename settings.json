@@ -4,7 +4,8 @@
     ], 
     "exclude": [], 
     "directories": [
-        "C:/Users/Alexander/Videos"
+        "F:/Temporary", 
+        "F:/Films & Documentaries"
     ], 
     "minimum_size_byte": 0, 
     "portable": false

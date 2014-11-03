@@ -1,8 +1,7 @@
 from util import json
-from util.path import *
+from util import path
 
 _filename = 'settings' + '.json'
-#todo Use <sorted(list)> to remove duplicatess
 
 
 # Contains user settings for application
@@ -13,6 +12,7 @@ class Settings:
         self.exclude = exclude
         self.minimum_size_byte = minimum_size_byte
         self.portable = portable
+        self.load()
 
     # Load attributes from JSON
     def load(self):
@@ -22,7 +22,7 @@ class Settings:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
 
-            self.directories = remove_redundant(self.directories)
+            self.directories = path.remove_redundant(self.directories)
             self.file_extensions = sorted(self.file_extensions)
             self.exclude = sorted(self.exclude)
 
@@ -35,6 +35,6 @@ class Settings:
     def save(self):
         json.write(self.to_dictionary(), _filename)
 
-    def add_directory(self, path):
-        self.directories.append(path)
-        self.directories = remove_redundant(self.directories)
+    def add_directory(self, directory):
+        self.directories.append(directory)
+        self.directories = path.remove_redundant(self.directories)

@@ -1,3 +1,8 @@
+gui/
+*.json
+*.db
+
+
 ### Linux ###
 *~
 .directory
