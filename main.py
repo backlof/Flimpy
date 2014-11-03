@@ -1,6 +1,3 @@
-# Organization: make modules reusable
-
-from models.settings import Settings
 from models.library import Library
 
 
@@ -12,12 +9,8 @@ def prompt_dir():
 
 
 def main():
-    #settings = Settings()
     lib = Library()
     lib.update()
-
-    #settings.save()
-
     lib.save()
 
 
