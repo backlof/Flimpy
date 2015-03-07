@@ -1,56 +1,50 @@
-from sqlalchemy import Column, Unicode, Boolean, DateTime, Integer
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
-import os
-from util import path
 from models.settings import Settings
-
-_filename = 'library' + '.db'
-_engine = create_engine('sqlite:///' + _filename, echo=True)
-Base = declarative_base(bind=_engine)
-Session = sessionmaker(bind=_engine)
-session = Session()
+from util import json
+from util import path
+from os import stat
 
 
-class Film(Base):
-    __tablename__ = 'films'
-    file = Column(Unicode(120), primary_key=True, nullable=False)
-    watched = Column(Boolean, nullable=False)
-    date_created = Column(DateTime(timezone=True), nullable=False)
-    size = Column(Integer, nullable=False)
+_filename = 'films' + '.json'
+portable_paths = False
 
-    def __init__(self, file, date_created, size, watched=False):
-        self.file = file
+
+class Film():
+    def __init__(self, abspath, last_modification, size, relpath=None, watched=False):
+        self.abspath = abspath
+        self.relpath = relpath if relpath else path.relative(abspath)
         self.watched = watched
-        self.date_created = date_created
+        self.last_modification = last_modification
         self.size = size
 
-    def __eq__(self, other):
-        return self.file == other.file
+    def path(self):
+        return self.abspath if portable_paths else self.relpath
 
-    def save(self):
-        session.add(self)
-        session.commit()
+    def __eq__(self, other):
+        return self.path() == other.path()
 
     def print(self):
-        print(type(self), self.file, self.watched, self.date_created)
+        print(type(self), self.path())
 
-# Has to be after model class
-Base.metadata.create_all()
+    def watch(self):
+        path.run(self.path())
 
 
 class Library():
     def __init__(self):
         self.films = []
-        self.films = session.query(Film).all()
         self.settings = Settings()
+        global portable_paths
+        portable_paths = self.settings.portable_paths
+        self._load()
+
+    def _load(self):
+        content = json.read(_filename)
+        if content:
+            for dictionary in content:
+                self.films.append(Film(**dictionary))
 
     def save(self):
-        session.add_all(self.films)
-        session.commit()
-
+        json.write(self.films, _filename)
         self.settings.save()
 
     def update(self):
@@ -58,26 +52,54 @@ class Library():
 
         found = []
 
-        for directory in self.settings.directories:
-            for root, dirnames, filenames in walk(directory):
-                for filename in filenames:
-                    absolute = os.path.join(root, filename)
-                    mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime = os.stat(absolute)
-                    if filename.lower().endswith(tuple(self.settings.file_extensions)):
-                        if size > self.settings.minimum_size_byte:
-                            found.append(Film(file=absolute, date_created=get_datetime(ctime), size=size))
+        for directory in self.settings.directories():
+            if path.exists(directory):
+                for root, dirnames, filenames in walk(directory):
+                    for filename in filenames:
 
-        # Film has been removed from disk - remove from database
+                        # Get around the 256 character limit by prepending \\\\?\\
+                        absolute = path.join("\\\?\\", root, filename)
+
+                        if filename.lower().endswith(tuple(self.settings.file_extensions)):
+
+                            mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime = stat(absolute)
+                            if size > self.settings.minimum_size_byte:
+
+                                found.append(Film(abspath=absolute, last_modification=get_datetime(mtime), size=size))
+            else:
+                self.settings.directories().remove(directory)
+
+        # Film has been removed from disk - remove from library
         for film in self.films:
-            #film.print()
             if film not in found:
-                del film
+                #print('Removed: {}'.format(film.print()))
+                self.films.remove(film)
+                #del film
 
-        # Film has been added to disk - add to database
+        # New film - add to library
         for film in found:
-            #print('Found: ' + film.file)
             if film not in self.films:
+                #print('Found: {}'.format(film.print()))
                 self.films.append(film)
+
+    def random_movie(self):
+        import random
+
+        if self.films:
+            found = []
+
+            for film in self.films:
+                if not film.watched:
+                    found.append(film)
+
+            if found:
+                return random.choice(found)
+            else:
+                print("There are no unwatched films.")
+                return None
+        else:
+            print("There are no films added.")
+            return None
 
 
 def get_datetime(timestamp):
