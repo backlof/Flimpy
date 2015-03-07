@@ -42,21 +42,19 @@ class Settings:
             absolute = path.absolute(directory)
             relative = path.relative(directory)
 
-            if self.directories().__contains__(relative) or self.directories().__contains__(absolute):
-                print("The directory is already added.")
-            else:
+            if not self.directories().__contains__(relative) or self.directories().__contains__(absolute):
                 self.relpath_directories.append(relative)
                 self.abspath_directories.append(absolute)
 
-            # Remove subfolders to avoid duplicates
-            for x in self.directories():
-                for y in self.directories():
-                    if x != y and y.startswith(x):
-                        if path.isabs(y):
-                            # Delete the longest
-                            self.remove_directory(y)
-                        else:
-                            # Delete the shortest
-                            self.remove_directory(x)
+                # Remove subfolders to avoid duplicates
+                for x in self.directories():
+                    for y in self.directories():
+                        if x != y and y.startswith(x):
+                            if path.isabs(y):
+                                # Delete the longest
+                                self.remove_directory(y)
+                            else:
+                                # Delete the shortest
+                                self.remove_directory(x)
         else:
             print("The directory doesn't exist.")
